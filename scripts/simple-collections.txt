@@ -1,0 +1,23 @@
+// Simple MongoDB Collections Creation
+// Run with: mongosh < simple-collections.txt
+
+use social-learning-notes
+
+// Create collections (empty, no validation, no indexes)
+db.createCollection("users")
+db.createCollection("subjects")
+db.createCollection("notes")
+db.createCollection("ratings")
+db.createCollection("comments")
+db.createCollection("follows")
+
+print("6 collections created successfully!")
+print("Database is ready!")
+
+// Show created collections
+print("\nCreated collections:")
+db.listCollections().forEach(function(collection) {
+  print("- " + collection.name)
+})
+
+print("\nSetup complete!")

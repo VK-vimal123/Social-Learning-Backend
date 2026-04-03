@@ -1,0 +1,180 @@
+// MongoDB Collections Setup - No Sample Data
+// Run with: mongosh < create-collections.txt
+
+use social-learning-notes
+
+// Create collections (they will be created automatically when first document is inserted)
+// But we'll create them explicitly with validation rules
+
+// Users Collection
+db.createCollection("users", {
+  validator: {
+    $jsonSchema: {
+      bsonType: "object",
+      required: ["fullName", "email", "username", "password"],
+      properties: {
+        fullName: { bsonType: "string" },
+        email: { bsonType: "string" },
+        username: { bsonType: "string" },
+        password: { bsonType: "string" },
+        school: { bsonType: "string" },
+        branch: { bsonType: "string" },
+        bio: { bsonType: "string" },
+        phone: { bsonType: "string" },
+        location: { bsonType: "string" },
+        role: { bsonType: "string" },
+        avatar: { bsonType: "string" },
+        stats: { bsonType: "object" },
+        badges: { bsonType: "array" },
+        isActive: { bsonType: "bool" },
+        isVerified: { bsonType: "bool" },
+        createdAt: { bsonType: "date" },
+        updatedAt: { bsonType: "date" }
+      }
+    }
+  }
+})
+
+// Subjects Collection
+db.createCollection("subjects", {
+  validator: {
+    $jsonSchema: {
+      bsonType: "object",
+      required: ["name", "code", "department"],
+      properties: {
+        name: { bsonType: "string" },
+        code: { bsonType: "string" },
+        department: { bsonType: "string" },
+        description: { bsonType: "string" },
+        credits: { bsonType: "int" },
+        semester: { bsonType: "int" },
+        isActive: { bsonType: "bool" },
+        totalNotes: { bsonType: "int" },
+        createdAt: { bsonType: "date" },
+        updatedAt: { bsonType: "date" }
+      }
+    }
+  }
+})
+
+// Notes Collection
+db.createCollection("notes", {
+  validator: {
+    $jsonSchema: {
+      bsonType: "object",
+      required: ["title", "subject", "uploadedBy"],
+      properties: {
+        title: { bsonType: "string" },
+        description: { bsonType: "string" },
+        subject: { bsonType: "objectId" },
+        uploadedBy: { bsonType: "objectId" },
+        tags: { bsonType: "array" },
+        difficulty: { bsonType: "string" },
+        fileUrl: { bsonType: "string" },
+        fileName: { bsonType: "string" },
+        fileSize: { bsonType: "long" },
+        fileType: { bsonType: "string" },
+        stats: { bsonType: "object" },
+        isActive: { bsonType: "bool" },
+        createdAt: { bsonType: "date" },
+        updatedAt: { bsonType: "date" }
+      }
+    }
+  }
+})
+
+// Ratings Collection
+db.createCollection("ratings", {
+  validator: {
+    $jsonSchema: {
+      bsonType: "object",
+      required: ["note", "user", "rating"],
+      properties: {
+        note: { bsonType: "objectId" },
+        user: { bsonType: "objectId" },
+        rating: { bsonType: "int" },
+        review: { bsonType: "string" },
+        createdAt: { bsonType: "date" }
+      }
+    }
+  }
+})
+
+// Comments Collection
+db.createCollection("comments", {
+  validator: {
+    $jsonSchema: {
+      bsonType: "object",
+      required: ["note", "user", "content"],
+      properties: {
+        note: { bsonType: "objectId" },
+        user: { bsonType: "objectId" },
+        content: { bsonType: "string" },
+        parentComment: { bsonType: "objectId" },
+        likes: { bsonType: "int" },
+        isReported: { bsonType: "bool" },
+        isDeleted: { bsonType: "bool" },
+        createdAt: { bsonType: "date" },
+        updatedAt: { bsonType: "date" }
+      }
+    }
+  }
+})
+
+// Follows Collection
+db.createCollection("follows", {
+  validator: {
+    $jsonSchema: {
+      bsonType: "object",
+      required: ["follower", "following"],
+      properties: {
+        follower: { bsonType: "objectId" },
+        following: { bsonType: "objectId" },
+        createdAt: { bsonType: "date" }
+      }
+    }
+  }
+})
+
+// Create indexes for performance
+print("Creating indexes...")
+
+// Users indexes
+db.users.createIndex({ email: 1 }, { unique: true })
+db.users.createIndex({ username: 1 }, { unique: true })
+db.users.createIndex({ school: 1 })
+db.users.createIndex({ branch: 1 })
+
+// Subjects indexes
+db.subjects.createIndex({ code: 1 }, { unique: true })
+db.subjects.createIndex({ department: 1, semester: 1 })
+
+// Notes indexes
+db.notes.createIndex({ title: "text", description: "text", tags: "text" })
+db.notes.createIndex({ subject: 1, createdAt: -1 })
+db.notes.createIndex({ uploadedBy: 1, createdAt: -1 })
+db.notes.createIndex({ "stats.averageRating": -1 })
+db.notes.createIndex({ "stats.downloads": -1 })
+
+// Ratings indexes
+db.ratings.createIndex({ note: 1, user: 1 }, { unique: true })
+
+// Comments indexes
+db.comments.createIndex({ note: 1, createdAt: -1 })
+db.comments.createIndex({ user: 1, createdAt: -1 })
+db.comments.createIndex({ parentComment: 1 })
+
+// Follows indexes
+db.follows.createIndex({ follower: 1, following: 1 }, { unique: true })
+
+print("Collections and indexes created successfully!")
+print("Database is ready for your application!")
+
+// Show collections
+print("\nCreated collections:")
+db.listCollections().forEach(function(collection) {
+  print("- " + collection.name)
+})
+
+print("\nDatabase setup complete!")
+print("You can now start your application and register users through the frontend.")

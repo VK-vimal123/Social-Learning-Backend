@@ -1,0 +1,328 @@
+// MongoDB setup for Social Learning Notes Exchange
+// Run with: mongosh < setup-mongodb.txt
+
+use social-learning-notes
+
+// Clear collections
+db.users.deleteMany({})
+db.notes.deleteMany({})
+db.subjects.deleteMany({})
+db.ratings.deleteMany({})
+db.comments.deleteMany({})
+db.follows.deleteMany({})
+
+print("Cleared existing collections")
+
+// Create subjects
+db.subjects.insertMany([
+  {
+    name: "Computer Programming",
+    code: "CS101",
+    department: "Computer Science",
+    description: "Introduction to programming fundamentals and problem-solving",
+    credits: 4,
+    semester: 1,
+    isActive: true,
+    totalNotes: 0,
+    createdAt: new Date(),
+    updatedAt: new Date()
+  },
+  {
+    name: "Data Structures",
+    code: "CS201",
+    department: "Computer Science",
+    description: "Advanced data structures and algorithms",
+    credits: 4,
+    semester: 2,
+    isActive: true,
+    totalNotes: 0,
+    createdAt: new Date(),
+    updatedAt: new Date()
+  },
+  {
+    name: "Engineering Mathematics",
+    code: "MA101",
+    department: "Mathematics",
+    description: "Calculus, linear algebra, and differential equations",
+    credits: 5,
+    semester: 1,
+    isActive: true,
+    totalNotes: 0,
+    createdAt: new Date(),
+    updatedAt: new Date()
+  },
+  {
+    name: "Physics for Engineers",
+    code: "PH101",
+    department: "Physics",
+    description: "Mechanics, thermodynamics, and electromagnetism",
+    credits: 4,
+    semester: 1,
+    isActive: true,
+    totalNotes: 0,
+    createdAt: new Date(),
+    updatedAt: new Date()
+  }
+])
+
+print("Subjects created")
+
+// Create users
+db.users.insertMany([
+  {
+    fullName: "Sarah Johnson",
+    email: "sarah.j@university.edu",
+    username: "sarahj",
+    password: "$2a$10$N9qo8uLOickgx2ZMRZoMye.IjdIr1dD2O4k1kP5s5F5F5F5F5F5F5",
+    school: "Engineering College",
+    branch: "Computer Science",
+    bio: "Passionate about programming and sharing knowledge",
+    phone: "+1-555-0123",
+    location: "New York, USA",
+    role: "student",
+    avatar: "SJ",
+    stats: {
+      notesUploaded: 12,
+      notesDownloaded: 45,
+      totalDownloads: 1250,
+      totalViews: 3400,
+      averageRating: 4.7,
+      followers: 89,
+      following: 67
+    },
+    badges: [
+      { name: "Rising Star", icon: "star", description: "10+ notes uploaded" },
+      { name: "Top Contributor", icon: "trophy", description: "1000+ downloads" }
+    ],
+    isActive: true,
+    isVerified: true,
+    createdAt: new Date("2024-01-15"),
+    updatedAt: new Date()
+  },
+  {
+    fullName: "Mike Chen",
+    email: "mike.chen@university.edu",
+    username: "mikec",
+    password: "$2a$10$N9qo8uLOickgx2ZMRZoMye.IjdIr1dD2O4k1kP5s5F5F5F5F5F5F5",
+    school: "Engineering College",
+    branch: "Computer Science",
+    bio: "Algorithm enthusiast and problem solver",
+    phone: "+1-555-0124",
+    location: "San Francisco, USA",
+    role: "student",
+    avatar: "MC",
+    stats: {
+      notesUploaded: 8,
+      notesDownloaded: 32,
+      totalDownloads: 890,
+      totalViews: 2100,
+      averageRating: 4.5,
+      followers: 56,
+      following: 43
+    },
+    badges: [
+      { name: "Algorithm Master", icon: "computer", description: "Expert in algorithms" }
+    ],
+    isActive: true,
+    isVerified: false,
+    createdAt: new Date("2024-02-01"),
+    updatedAt: new Date()
+  },
+  {
+    fullName: "Emily Davis",
+    email: "emily.d@university.edu",
+    username: "emilyd",
+    password: "$2a$10$N9qo8uLOickgx2ZMRZoMye.IjdIr1dD2O4k1kP5s5F5F5F5F5F5F5",
+    school: "Engineering College",
+    branch: "Electronics",
+    bio: "Electronics engineering student and maker",
+    phone: "+1-555-0125",
+    location: "Boston, USA",
+    role: "student",
+    avatar: "ED",
+    stats: {
+      notesUploaded: 15,
+      notesDownloaded: 28,
+      totalDownloads: 1560,
+      totalViews: 4200,
+      averageRating: 4.8,
+      followers: 102,
+      following: 78
+    },
+    badges: [
+      { name: "Electronics Expert", icon: "bolt", description: "Top electronics contributor" },
+      { name: "Helpful Peer", icon: "heart", description: "50+ positive ratings" }
+    ],
+    isActive: true,
+    isVerified: true,
+    createdAt: new Date("2024-01-20"),
+    updatedAt: new Date()
+  }
+])
+
+print("Users created")
+
+// Get references
+const users = db.users.find().toArray()
+const sarahId = users[0]._id
+const mikeId = users[1]._id
+const emilyId = users[2]._id
+
+const subjects = db.subjects.find().toArray()
+const cs101Id = subjects.find(s => s.code === "CS101")._id
+const cs201Id = subjects.find(s => s.code === "CS201")._id
+const ma101Id = subjects.find(s => s.code === "MA101")._id
+const ph101Id = subjects.find(s => s.code === "PH101")._id
+
+// Create notes
+db.notes.insertMany([
+  {
+    title: "Advanced Calculus Complete Notes",
+    description: "Comprehensive notes covering differential and integral calculus with examples and practice problems.",
+    subject: ma101Id,
+    uploadedBy: sarahId,
+    tags: ["calculus", "mathematics", "advanced", "exam"],
+    difficulty: "intermediate",
+    fileUrl: "https://res.cloudinary.com/demo/image/upload/v1234567890/calculus-notes.pdf",
+    fileName: "Advanced_Calculus_Notes.pdf",
+    fileSize: 2457600,
+    fileType: "pdf",
+    stats: {
+      views: 1823,
+      downloads: 456,
+      likes: 89,
+      averageRating: 4.8,
+      totalRatings: 124
+    },
+    isActive: true,
+    createdAt: new Date("2024-03-10"),
+    updatedAt: new Date()
+  },
+  {
+    title: "Data Structures and Algorithms",
+    description: "Detailed explanation of data structures, algorithms, and their implementations with code examples.",
+    subject: cs201Id,
+    uploadedBy: mikeId,
+    tags: ["data-structures", "algorithms", "programming"],
+    difficulty: "advanced",
+    fileUrl: "https://res.cloudinary.com/demo/image/upload/v1234567890/ds-algorithms.pdf",
+    fileName: "Data_Structures_Algorithms.pdf",
+    fileSize: 3984512,
+    fileType: "pdf",
+    stats: {
+      views: 3456,
+      downloads: 892,
+      likes: 156,
+      averageRating: 4.7,
+      totalRatings: 203
+    },
+    isActive: true,
+    createdAt: new Date("2024-03-03"),
+    updatedAt: new Date()
+  },
+  {
+    title: "Physics Lab Manual 2024",
+    description: "Complete laboratory manual with detailed procedures, observations, and calculations for all physics experiments.",
+    subject: ph101Id,
+    uploadedBy: emilyId,
+    tags: ["physics", "lab", "manual", "experiments"],
+    difficulty: "beginner",
+    fileUrl: "https://res.cloudinary.com/demo/image/upload/v1234567890/physics-lab.pdf",
+    fileName: "Physics_Lab_Manual_2024.pdf",
+    fileSize: 5347737,
+    fileType: "pdf",
+    stats: {
+      views: 945,
+      downloads: 234,
+      likes: 67,
+      averageRating: 4.6,
+      totalRatings: 89
+    },
+    isActive: true,
+    createdAt: new Date("2024-03-08"),
+    updatedAt: new Date()
+  }
+])
+
+print("Notes created")
+
+// Get note references
+const notes = db.notes.find().toArray()
+const noteIds = notes.map(note => note._id)
+
+// Create ratings
+db.ratings.insertMany([
+  { note: noteIds[0], user: mikeId, rating: 5, review: "Excellent calculus notes! Very clear explanations.", createdAt: new Date("2024-03-11") },
+  { note: noteIds[0], user: emilyId, rating: 4, review: "Good comprehensive coverage, could use more examples.", createdAt: new Date("2024-03-12") },
+  { note: noteIds[1], user: sarahId, rating: 5, review: "Best algorithms notes I've found! Very detailed.", createdAt: new Date("2024-03-04") },
+  { note: noteIds[2], user: mikeId, rating: 5, review: "Perfect lab manual! All experiments clearly explained.", createdAt: new Date("2024-03-09") }
+])
+
+print("Ratings created")
+
+// Create comments
+db.comments.insertMany([
+  {
+    note: noteIds[0],
+    user: mikeId,
+    content: "These notes are incredibly helpful! The examples really helped me understand the complex concepts.",
+    parentComment: null,
+    likes: 12,
+    isReported: false,
+    isDeleted: false,
+    createdAt: new Date("2024-03-11"),
+    updatedAt: new Date()
+  },
+  {
+    note: noteIds[1],
+    user: sarahId,
+    content: "The time complexity analysis section is particularly well explained.",
+    parentComment: null,
+    likes: 15,
+    isReported: false,
+    isDeleted: false,
+    createdAt: new Date("2024-03-04"),
+    updatedAt: new Date()
+  }
+])
+
+print("Comments created")
+
+// Create follows
+db.follows.insertMany([
+  { follower: mikeId, following: sarahId, createdAt: new Date("2024-02-15") },
+  { follower: emilyId, following: sarahId, createdAt: new Date("2024-02-20") },
+  { follower: sarahId, following: mikeId, createdAt: new Date("2024-02-25") }
+])
+
+print("Follows created")
+
+// Create indexes
+print("Creating indexes...")
+db.users.createIndex({ email: 1 }, { unique: true })
+db.users.createIndex({ username: 1 }, { unique: true })
+db.notes.createIndex({ title: "text", description: "text", tags: "text" })
+db.notes.createIndex({ subject: 1, createdAt: -1 })
+db.subjects.createIndex({ code: 1 }, { unique: true })
+db.ratings.createIndex({ note: 1, user: 1 }, { unique: true })
+db.comments.createIndex({ note: 1, createdAt: -1 })
+db.follows.createIndex({ follower: 1, following: 1 }, { unique: true })
+
+print("Indexes created")
+
+// Show statistics
+print("\nDATABASE SETUP COMPLETE!")
+print("Users: " + db.users.countDocuments())
+print("Subjects: " + db.subjects.countDocuments())
+print("Notes: " + db.notes.countDocuments())
+print("Ratings: " + db.ratings.countDocuments())
+print("Comments: " + db.comments.countDocuments())
+print("Follows: " + db.follows.countDocuments())
+
+print("\nLOGIN CREDENTIALS:")
+print("Email: sarah.j@university.edu")
+print("Password: password123")
+print("\nEmail: mike.chen@university.edu")
+print("Password: password123")
+
+print("\nREADY FOR TESTING!")

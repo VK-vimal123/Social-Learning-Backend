@@ -1,0 +1,171 @@
+// Sample Data for MongoDB Atlas - Complete Flow Testing
+// Run with: mongosh "mongodb+srv://vimal_12:vimal_12@cluster0.shqljr4.mongodb.net/social_learning" < atlas-sample-data.txt
+
+use social_learning
+
+// Create subjects
+db.subjects.insertMany([
+  {
+    name: "Computer Programming",
+    code: "CS101",
+    department: "Computer Science",
+    description: "Introduction to programming fundamentals",
+    credits: 4,
+    semester: 1,
+    isActive: true,
+    totalNotes: 0,
+    createdAt: new Date(),
+    updatedAt: new Date()
+  },
+  {
+    name: "Data Structures",
+    code: "CS201",
+    department: "Computer Science",
+    description: "Advanced data structures and algorithms",
+    credits: 4,
+    semester: 2,
+    isActive: true,
+    totalNotes: 0,
+    createdAt: new Date(),
+    updatedAt: new Date()
+  },
+  {
+    name: "Engineering Mathematics",
+    code: "MA101",
+    department: "Mathematics",
+    description: "Calculus and linear algebra",
+    credits: 5,
+    semester: 1,
+    isActive: true,
+    totalNotes: 0,
+    createdAt: new Date(),
+    updatedAt: new Date()
+  }
+])
+
+print("Subjects created")
+
+// Create test users (passwords are hashed for "password123")
+db.users.insertMany([
+  {
+    fullName: "John Doe",
+    email: "john@test.com",
+    username: "johndoe",
+    password: "$2a$10$N9qo8uLOickgx2ZMRZoMye.IjdIr1dD2O4k1kP5s5F5F5F5F5F5F5",
+    school: "Engineering College",
+    branch: "Computer Science",
+    bio: "Computer science student",
+    phone: "+1234567890",
+    location: "New York",
+    role: "student",
+    avatar: "JD",
+    stats: {
+      notesUploaded: 0,
+      notesDownloaded: 0,
+      totalDownloads: 0,
+      totalViews: 0,
+      averageRating: 0,
+      followers: 0,
+      following: 0
+    },
+    badges: [],
+    isActive: true,
+    isVerified: false,
+    createdAt: new Date(),
+    updatedAt: new Date()
+  },
+  {
+    fullName: "Jane Smith",
+    email: "jane@test.com",
+    username: "janesmith",
+    password: "$2a$10$N9qo8uLOickgx2ZMRZoMye.IjdIr1dD2O4k1kP5s5F5F5F5F5F5F5",
+    school: "Engineering College",
+    branch: "Computer Science",
+    bio: "Programming enthusiast",
+    phone: "+1234567891",
+    location: "Boston",
+    role: "student",
+    avatar: "JS",
+    stats: {
+      notesUploaded: 0,
+      notesDownloaded: 0,
+      totalDownloads: 0,
+      totalViews: 0,
+      averageRating: 0,
+      followers: 0,
+      following: 0
+    },
+    badges: [],
+    isActive: true,
+    isVerified: false,
+    createdAt: new Date(),
+    updatedAt: new Date()
+  }
+])
+
+print("Users created")
+
+// Get references
+const users = db.users.find().toArray()
+const johnId = users[0]._id
+const janeId = users[1]._id
+
+const subjects = db.subjects.find().toArray()
+const cs101Id = subjects.find(s => s.code === "CS101")._id
+const cs201Id = subjects.find(s => s.code === "CS201")._id
+const ma101Id = subjects.find(s => s.code === "MA101")._id
+
+// Create sample notes
+db.notes.insertMany([
+  {
+    title: "Introduction to Programming",
+    description: "Basic programming concepts and fundamentals",
+    subject: cs101Id,
+    uploadedBy: johnId,
+    tags: ["programming", "basics", "introduction"],
+    difficulty: "beginner",
+    fileUrl: "https://example.com/intro-programming.pdf",
+    fileName: "intro_programming.pdf",
+    fileSize: 1024000,
+    fileType: "pdf",
+    stats: {
+      views: 10,
+      downloads: 5,
+      likes: 3,
+      averageRating: 4.5,
+      totalRatings: 2
+    },
+    isActive: true,
+    createdAt: new Date(),
+    updatedAt: new Date()
+  },
+  {
+    title: "Data Structures Overview",
+    description: "Complete overview of data structures",
+    subject: cs201Id,
+    uploadedBy: janeId,
+    tags: ["data-structures", "algorithms"],
+    difficulty: "intermediate",
+    fileUrl: "https://example.com/data-structures.pdf",
+    fileName: "data_structures.pdf",
+    fileSize: 2048000,
+    fileType: "pdf",
+    stats: {
+      views: 15,
+      downloads: 8,
+      likes: 5,
+      averageRating: 4.0,
+      totalRatings: 3
+    },
+    isActive: true,
+    createdAt: new Date(),
+    updatedAt: new Date()
+  }
+])
+
+print("Sample notes created")
+
+print("\nMongoDB Atlas setup complete!")
+print("Login credentials:")
+print("Email: john@test.com, Password: password123")
+print("Email: jane@test.com, Password: password123")
