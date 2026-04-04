@@ -98,42 +98,42 @@ app.use('*', (req, res) => {
   });
 });
 
-// Error handler middleware
-app.use(errorHandler);
-
-const PORT = process.env.PORT || 5000;
-
-// Server keep-alive timeout to prevent connection drops
-const server = app.listen(PORT, () => {
-  console.log(`Server running in ${process.env.NODE_ENV} mode on port ${PORT}`);
-  console.log(`API available at http://localhost:${PORT}/api`);
-});
-
-// Increase timeout to prevent connection drops
-server.keepAliveTimeout = 120000; // 2 minutes
-server.headersTimeout = 120000; // 2 minutes
-
-// Handle unhandled promise rejections - don't exit, just log
-process.on('unhandledRejection', (err, promise) => {
-  console.log('Unhandled Rejection:', err.message);
-  console.log('Stack:', err.stack);
-  // Don't exit process, just log the error
-});
-
-// Handle uncaught exceptions - don't exit, just log
-process.on('uncaughtException', (err) => {
-  console.log('Uncaught Exception:', err.message);
-  console.log('Stack:', err.stack);
-  // Don't exit process
-});
-
-// Graceful shutdown on SIGTERM
-process.on('SIGTERM', () => {
-  console.log('SIGTERM received. Shutting down gracefully...');
-  server.close(() => {
-    console.log('Server closed');
-    process.exit(0);
-  });
-});
-
+// Export for Vercel serverless
 module.exports = app;
+
+// Only start server if not on Vercel (local development)
+if (process.env.VERCEL !== '1') {
+  const PORT = process.env.PORT || 5000;
+
+  const server = app.listen(PORT, () => {
+    console.log(`Server running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}`);
+    console.log(`API available at http://localhost:${PORT}/api`);
+  });
+
+  // Server keep-alive timeout to prevent connection drops
+  server.keepAliveTimeout = 120000; // 2 minutes
+  server.headersTimeout = 120000; // 2 minutes
+
+  // Handle unhandled promise rejections - don't exit, just log
+  process.on('unhandledRejection', (err, promise) => {
+    console.log('Unhandled Rejection:', err.message);
+    console.log('Stack:', err.stack);
+    // Don't exit process, just log the error
+  });
+
+  // Handle uncaught exceptions - don't exit, just log
+  process.on('uncaughtException', (err) => {
+    console.log('Uncaught Exception:', err.message);
+    console.log('Stack:', err.stack);
+    // Don't exit process
+  });
+
+  // Graceful shutdown on SIGTERM
+  process.on('SIGTERM', () => {
+    console.log('SIGTERM received. Shutting down gracefully...');
+    server.close(() => {
+      console.log('Server closed');
+      process.exit(0);
+    });
+  });
+}
