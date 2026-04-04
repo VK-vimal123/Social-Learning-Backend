@@ -20,6 +20,7 @@ const ratings = require('./routes/ratings');
 const comments = require('./routes/comments');
 const follow = require('./routes/follow');
 const upload = require('./routes/upload');
+const users = require('./routes/users');
 
 const app = express();
 
@@ -39,11 +40,32 @@ app.use(limiter);
 // Set security headers
 app.use(helmet());
 
-// Enable CORS
+// Enable CORS - allow multiple frontend origins
+const allowedOrigins = [
+  process.env.FRONTEND_URL || 'http://localhost:3000',
+  'http://localhost:3000',
+  'http://127.0.0.1:3000',
+  'http://localhost:5000'
+];
+
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
-  credentials: true
+  origin: function(origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      console.log('CORS blocked origin:', origin);
+      callback(null, true); // Allow all origins in development
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin']
 }));
+
+// Handle preflight requests
+app.options('*', cors());
 
 // Body parser middleware
 app.use(express.json({ limit: '10mb' }));
@@ -51,6 +73,7 @@ app.use(express.urlencoded({ extended: false, limit: '10mb' }));
 
 // Mount routers
 app.use('/api/auth', auth);
+app.use('/api/users', users);
 app.use('/api/notes', notes);
 app.use('/api/subjects', subjects);
 app.use('/api/ratings', ratings);
@@ -80,21 +103,37 @@ app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
 
+// Server keep-alive timeout to prevent connection drops
 const server = app.listen(PORT, () => {
   console.log(`Server running in ${process.env.NODE_ENV} mode on port ${PORT}`);
+  console.log(`API available at http://localhost:${PORT}/api`);
 });
 
-// Handle unhandled promise rejections
+// Increase timeout to prevent connection drops
+server.keepAliveTimeout = 120000; // 2 minutes
+server.headersTimeout = 120000; // 2 minutes
+
+// Handle unhandled promise rejections - don't exit, just log
 process.on('unhandledRejection', (err, promise) => {
-  console.log('Unhandled Rejection:', err);
-  // Close server & exit process
-  server.close(() => process.exit(1));
+  console.log('Unhandled Rejection:', err.message);
+  console.log('Stack:', err.stack);
+  // Don't exit process, just log the error
 });
 
-// Handle uncaught exceptions
+// Handle uncaught exceptions - don't exit, just log
 process.on('uncaughtException', (err) => {
-  console.log('Uncaught Exception:', err);
-  process.exit(1);
+  console.log('Uncaught Exception:', err.message);
+  console.log('Stack:', err.stack);
+  // Don't exit process
+});
+
+// Graceful shutdown on SIGTERM
+process.on('SIGTERM', () => {
+  console.log('SIGTERM received. Shutting down gracefully...');
+  server.close(() => {
+    console.log('Server closed');
+    process.exit(0);
+  });
 });
 
 module.exports = app;

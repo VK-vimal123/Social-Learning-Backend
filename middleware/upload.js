@@ -9,14 +9,17 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
-// Configure Cloudinary storage for notes
+// Configure Cloudinary storage for notes - auto resource type for all files
 const noteStorage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: {
     folder: 'social-learning-notes/notes',
     resource_type: 'auto',
-    allowed_formats: ['pdf', 'doc', 'docx', 'txt', 'jpg', 'jpeg', 'png', 'gif'],
-    public_id: (req, file) => `note_${Date.now()}_${file.originalname}`
+    public_id: (req, file) => {
+      const timestamp = Date.now();
+      const cleanName = file.originalname.replace(/[^a-zA-Z0-9]/g, '_');
+      return `note_${timestamp}_${cleanName}`;
+    }
   }
 });
 
@@ -31,33 +34,41 @@ const avatarStorage = new CloudinaryStorage({
   }
 });
 
-// File filter for notes
+// File filter for notes - accept common document types
 const noteFileFilter = (req, file, cb) => {
-  const allowedTypes = [
+  const allowedMimeTypes = [
     'application/pdf',
     'application/msword',
     'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'application/vnd.ms-excel',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    'application/vnd.ms-powerpoint',
+    'application/vnd.openxmlformats-officedocument.presentationml.presentation',
     'text/plain',
-    'image/jpeg',
-    'image/png',
-    'image/gif'
+    'text/csv'
   ];
 
-  if (allowedTypes.includes(file.mimetype)) {
+  const allowedExtensions = ['.pdf', '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx', '.txt', '.csv'];
+  const ext = file.originalname.toLowerCase().substring(file.originalname.lastIndexOf('.'));
+
+  if (allowedMimeTypes.includes(file.mimetype) || allowedExtensions.includes(ext)) {
     cb(null, true);
   } else {
-    cb(new Error('Invalid file type. Only PDF, DOC, DOCX, TXT, and image files are allowed.'), false);
+    console.log('Rejected:', file.mimetype, file.originalname);
+    cb(new Error(`File type not supported. Allowed: PDF, DOC, DOCX, TXT, CSV, XLS, XLSX, PPT, PPTX`), false);
   }
 };
 
 // File filter for avatars
 const avatarFileFilter = (req, file, cb) => {
-  const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
+  const allowedMimeTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+  const allowedExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
+  const ext = file.originalname.toLowerCase().substring(file.originalname.lastIndexOf('.'));
 
-  if (allowedTypes.includes(file.mimetype)) {
+  if (allowedMimeTypes.includes(file.mimetype) || allowedExtensions.includes(ext)) {
     cb(null, true);
   } else {
-    cb(new Error('Invalid file type. Only JPG, PNG, and GIF images are allowed.'), false);
+    cb(new Error('Please upload an image file (JPG, PNG, GIF, WEBP)'), false);
   }
 };
 
@@ -81,17 +92,25 @@ const uploadAvatar = multer({
 
 // Handle file upload errors
 const handleUploadErrors = (err, req, res, next) => {
+  console.log('Upload error details:', err);
+  
   if (err instanceof multer.MulterError) {
     if (err.code === 'LIMIT_FILE_SIZE') {
       return res.status(400).json({
         success: false,
-        message: 'File size too large'
+        message: 'File size too large. Maximum size is 10MB.'
       });
     }
     if (err.code === 'LIMIT_FILE_COUNT') {
       return res.status(400).json({
         success: false,
-        message: 'Too many files'
+        message: 'Too many files. Only one file allowed.'
+      });
+    }
+    if (err.code === 'LIMIT_UNEXPECTED_FILE') {
+      return res.status(400).json({
+        success: false,
+        message: 'Unexpected file field. Please use "file" as the field name.'
       });
     }
   }
@@ -99,7 +118,7 @@ const handleUploadErrors = (err, req, res, next) => {
   if (err) {
     return res.status(400).json({
       success: false,
-      message: err.message
+      message: err.message || 'File upload failed'
     });
   }
 

@@ -13,14 +13,23 @@ router.post('/note', protect, uploadNote.single('file'), handleUploadErrors, asy
       });
     }
 
+    console.log('Uploaded file data:', req.file);
+
+    // For raw files, Cloudinary returns path instead of secure_url
+    const fileUrl = req.file.secure_url || req.file.path || req.file.url;
+    const fileName = req.file.originalname || req.file.name;
+    const fileSize = req.file.size || req.file.bytes || 0;
+    const fileType = req.file.mimetype || req.file.format || req.file.resource_type || 'application/octet-stream';
+
     res.status(200).json({
       success: true,
       data: {
-        secure_url: req.file.secure_url,
-        original_filename: req.file.originalname,
-        bytes: req.file.size,
-        resource_type: req.file.resource_type,
-        format: req.file.format
+        secure_url: fileUrl,
+        original_filename: fileName,
+        bytes: fileSize,
+        resource_type: req.file.resource_type || 'raw',
+        format: req.file.format || fileName.split('.').pop(),
+        fileType: fileType
       }
     });
   } catch (error) {

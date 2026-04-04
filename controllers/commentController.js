@@ -17,14 +17,6 @@ const getNoteComments = asyncHandler(async (req, res) => {
       path: 'user',
       select: 'fullName username avatar'
     })
-    .populate({
-      path: 'replies',
-      match: { isDeleted: false },
-      populate: {
-        path: 'user',
-        select: 'fullName username avatar'
-      }
-    })
     .sort('-createdAt')
     .limit(limit * 1)
     .skip((page - 1) * limit);

@@ -1,0 +1,16 @@
+This is a sample study note file for testing the upload functionality.
+
+# Sample Study Notes
+
+## Introduction
+This is a test file to verify that the file upload system works correctly.
+
+## Key Points
+1. File uploads should work for PDF, DOC, DOCX, TXT formats
+2. Maximum file size is 10MB
+3. Files are stored securely on Cloudinary
+
+## Test Content
+Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+
+End of sample file.
