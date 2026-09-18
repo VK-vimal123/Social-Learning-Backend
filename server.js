@@ -98,6 +98,9 @@ app.use('*', (req, res) => {
   });
 });
 
+// Use error handler middleware
+app.use(errorHandler);
+
 // Export for Vercel serverless
 module.exports = app;
 
