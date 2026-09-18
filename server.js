@@ -9,8 +9,7 @@ const errorHandler = require('./middleware/errorHandler');
 // Load env vars
 dotenv.config();
 
-// Connect to database
-connectDB();
+// Connect to database variables
 
 // Route files
 const auth = require('./routes/auth');
@@ -23,6 +22,23 @@ const upload = require('./routes/upload');
 const users = require('./routes/users');
 
 const app = express();
+
+// Database Connection Middleware
+// Ensures the database is connected before handling any requests
+app.use(async (req, res, next) => {
+  // Skip DB connection for health check
+  if (req.path === '/api/health') return next();
+  
+  try {
+    await connectDB();
+    next();
+  } catch (error) {
+    res.status(503).json({
+      success: false,
+      message: 'Database connection failed. Please try again later.'
+    });
+  }
+});
 
 // Rate limiting
 const limiter = rateLimit({
